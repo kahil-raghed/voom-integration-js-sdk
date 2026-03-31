@@ -1,13 +1,22 @@
 import axios, { AxiosInstance } from 'axios';
 import crypto from 'crypto';
 
+/**
+ * Voom CRM Integration Client.
+ * Handles authentication and communication with the Voom CRM integration API.
+ */
 export class Client {
   // ===== Constants =====
+    /** Default base URL for the Voom CRM Integration API */
     static readonly DEFAULT_BASE_URL = 'https://crm-integration.voomproject.com';
 
+    /** Endpoint for connectivity testing */
     static readonly API_HELLO = '/api/client-api/v1/hello';
+    /** Endpoint for bulk inventory synchronization */
     static readonly API_BULK_PUSH = '/api/client-api/v1/inventory/bulk-push';
+    /** Endpoint for retrieving stored units */
     static readonly API_GET_UNITS = '/api/client-api/v1/inventory/get-units';
+
 
   // ===== Properties =====
   private baseUrl: string = Client.DEFAULT_BASE_URL;
@@ -18,6 +27,13 @@ export class Client {
     private isBasicAuthEnabled: boolean = false;
 
   // ===== Constructor =====
+    /**
+     * Creates a new instance of the Voom Integration Client.
+     * 
+     * @param clientId - The integration client ID.
+     * @param clientSecret - The integration client secret.
+     * @param basicAuth - Optional credentials for Basic Authentication.
+     */
     constructor(
         clientId: string,
         clientSecret: string,
@@ -35,15 +51,30 @@ export class Client {
   }
 
   // ===== Base URL =====
+  /**
+   * Retrieves the current base URL used for API requests.
+   * @returns {string} The current base URL.
+   */
   getBaseUrl(): string {
     return this.baseUrl;
   }
 
+  /**
+   * Sets a custom base URL for the API requests.
+   * @param baseUrl - The new base URL to use.
+   */
   setBaseUrl(baseUrl: string): void {
     this.baseUrl = baseUrl;
   }
 
     // ===== Auth Configuration =====
+    /**
+     * Enables or disables Basic Authentication.
+     * If enabled, standard signature-based headers will not be sent.
+     * 
+     * @param enable - Whether to use Basic Auth.
+     * @throws {Error} If Basic Auth credentials were not provided in the constructor.
+     */
     useBasicAuth(enable: boolean = true): void {
         if (enable && !this.basicAuth) {
             throw new Error('Basic Auth credentials must be provided in the constructor to enable it.');
@@ -52,6 +83,11 @@ export class Client {
     }
 
   // ===== Signature Generation =====
+  /**
+   * Generates a secure HMAC-SHA256 signature for request authentication.
+   * 
+   * @private
+   */
   private generateApiSignature(
     clientId: string,
     requestId: string,
@@ -69,6 +105,11 @@ export class Client {
   }
 
   // ===== Core API Caller =====
+  /**
+   * Internal method to perform HTTP requests with automatic authentication.
+   * 
+   * @private
+   */
   private async callApi<T = any>(
         method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     path: string,
@@ -112,7 +153,10 @@ export class Client {
   // ===== Public API Methods =====
 
   /**
-   * Push units in bulk
+   * Pushes units to the Voom CRM in bulk.
+   * 
+   * @param units - An array of unit data to synchronize.
+   * @returns {Promise<any>} The API response.
    */
   bulkPush(units: any[]): Promise<any> {
         return this.callApi('POST', Client.API_BULK_PUSH, {
@@ -121,14 +165,18 @@ export class Client {
   }
 
   /**
-   * Test API connection
+   * Tests the connection to the Voom CRM Integration API.
+   * 
+   * @returns {Promise<any>} The API response from the hello endpoint.
    */
   hello(): Promise<any> {
         return this.callApi('POST', Client.API_HELLO);
   }
 
   /**
-   * Get units
+   * Retrieves a list of units from the Voom CRM Integration.
+   * 
+   * @returns {Promise<any>} The API response containing unit data.
    */
   getUnits(): Promise<any> {
         return this.callApi('POST', Client.API_GET_UNITS);

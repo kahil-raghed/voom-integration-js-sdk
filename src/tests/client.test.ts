@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Client } from '../client';
-import { UnitFactory, Unit } from '../units';
+import { Unit, UnitFactory } from '../units';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -78,9 +78,9 @@ describe('Client', () => {
             expect.objectContaining({
                 auth: expect.objectContaining({
                     username: 'test-user',
-                    password: 'test-password'
+                    password: 'test-password',
                 }),
-                headers: {}
+                headers: {},
             })
         );
     });
