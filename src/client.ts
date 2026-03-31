@@ -167,9 +167,9 @@ export class Client {
    * Pushes units to the Voom CRM in bulk.
    * 
    * @param units - An array of unit data to synchronize.
-   * @returns {Promise<any>} The API response.
+   * @returns {Promise<Unit[]>} The API response.
    */
-  bulkPush(units: Unit[]): Promise<any> {
+  bulkPush(units: Unit[]): Promise<Unit[]> {
         return this.callApi('POST', Client.API_BULK_PUSH, {
       units,
     });
