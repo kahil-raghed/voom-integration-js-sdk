@@ -1,10 +1,20 @@
 import axios, { AxiosInstance } from 'axios';
 import crypto from 'crypto';
+import { Unit } from './units';
 
 /**
  * Voom CRM Integration Client.
  * Handles authentication and communication with the Voom CRM integration API.
  */
+
+interface ApiRequestConfig {
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    url: string;
+    data?: any;
+    headers: Record<string, string>;
+    auth?: { username: string; password: string };
+}
+
 export class Client {
   // ===== Constants =====
     /** Default base URL for the Voom CRM Integration API */
@@ -134,7 +144,8 @@ export class Client {
             headers['X-Request-Signature'] = signature;
         }
 
-        const requestConfig: any = {
+
+    const requestConfig: ApiRequestConfig = {
       method,
       url: this.baseUrl + path,
       data,
@@ -158,7 +169,7 @@ export class Client {
    * @param units - An array of unit data to synchronize.
    * @returns {Promise<any>} The API response.
    */
-  bulkPush(units: any[]): Promise<any> {
+  bulkPush(units: Unit[]): Promise<any> {
         return this.callApi('POST', Client.API_BULK_PUSH, {
       units,
     });
