@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 import { Unit } from './units';
 
 /**
@@ -190,6 +190,6 @@ export class Client {
    * @returns {Promise<any>} The API response containing unit data.
    */
   getUnits(): Promise<any> {
-        return this.callApi('POST', Client.API_GET_UNITS);
+        return this.callApi('POST', Client.API_GET_UNITS, {});
   }
 }
