@@ -26,6 +26,8 @@ export class Client {
     static readonly API_BULK_PUSH = '/api/client-api/v1/inventory/bulk-push';
     /** Endpoint for retrieving stored units */
     static readonly API_GET_UNITS = '/api/client-api/v1/inventory/get-units';
+    /** Endpoint for updating a unit */
+    // static readonly API_UPDATE_UNIT = (unitId: string) => `/api/client-api/v1/inventory/update-unit/${unitId}`;
 
 
   // ===== Properties =====
@@ -192,4 +194,14 @@ export class Client {
   getUnits(): Promise<any> {
         return this.callApi('POST', Client.API_GET_UNITS, {});
   }
+
+  /**
+   * Updates a unit in the Voom CRM Integration.
+   * 
+   * @param unitId - The ID of the unit to update.
+   * @returns {Promise<Unit>} The API response containing the updated unit data.
+   */
+//   updateUnit(unitId: string): Promise<Unit> {
+//         return this.callApi('PUT', Client.API_UPDATE_UNIT(unitId));
+//   }
 }
