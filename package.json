@@ -2,8 +2,11 @@
     "name": "@eyes360/voom-integration-js-sdk",
     "version": "1.0.0",
     "description": "",
-    "main": "index.js",
+    "main": "dist/client.js",
+    "types": "dist/client.d.ts",
     "scripts": {
+        "build": "tsc",
+        "prebuild": "rm -rf dist",
         "test": "jest",
         "test:watch": "jest --watch",
         "test:manual": "tsx manual-test.ts"
