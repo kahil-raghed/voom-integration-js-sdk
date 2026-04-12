@@ -16,7 +16,7 @@ interface ApiRequestConfig {
 }
 
 export class Client {
-  // ===== Constants =====
+    // ===== Constants =====
     /** Default base URL for the Voom CRM Integration API */
     static readonly DEFAULT_BASE_URL = 'https://crm-integration.voomproject.com';
 
@@ -26,95 +26,82 @@ export class Client {
     static readonly API_BULK_PUSH = '/api/client-api/v1/inventory/bulk-push';
     /** Endpoint for retrieving stored units */
     static readonly API_GET_UNITS = '/api/client-api/v1/inventory/get-units';
-    /** Endpoint for updating a unit */
-    // static readonly API_UPDATE_UNIT = (unitId: string) => `/api/client-api/v1/inventory/update-unit/${unitId}`;
 
-
-  // ===== Properties =====
-  private baseUrl: string = Client.DEFAULT_BASE_URL;
-  private clientId: string;
-  private clientSecret: string;
-  private http: AxiosInstance;
-    private basicAuth?: { username: string; password: string };
+    // ===== Properties =====
+    private baseUrl: string = Client.DEFAULT_BASE_URL;
+    private clientId: string;
+    private clientSecret: string;
+    private http: AxiosInstance;
     private isBasicAuthEnabled: boolean = false;
 
-  // ===== Constructor =====
+    // ===== Constructor =====
     /**
      * Creates a new instance of the Voom Integration Client.
-     * 
+     *
      * @param clientId - The integration client ID.
      * @param clientSecret - The integration client secret.
      * @param basicAuth - Optional credentials for Basic Authentication.
      */
-    constructor(
-        clientId: string,
-        clientSecret: string,
-        basicAuth?: { username: string; password: string }
-    ) {
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
-        this.basicAuth = basicAuth;
+    constructor(clientId: string, clientSecret: string) {
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
 
-    this.http = axios.create({
-      headers: {
+        this.http = axios.create({
+            headers: {
                 'Content-Type': 'application/json',
-      },
-    });
-  }
+            },
+        });
+    }
 
-  // ===== Base URL =====
-  /**
-   * Retrieves the current base URL used for API requests.
-   * @returns {string} The current base URL.
-   */
-  getBaseUrl(): string {
-    return this.baseUrl;
-  }
+    // ===== Base URL =====
+    /**
+     * Retrieves the current base URL used for API requests.
+     * @returns {string} The current base URL.
+     */
+    getBaseUrl(): string {
+        return this.baseUrl;
+    }
 
-  /**
-   * Sets a custom base URL for the API requests.
-   * @param baseUrl - The new base URL to use.
-   */
-  setBaseUrl(baseUrl: string): void {
-    this.baseUrl = baseUrl;
-  }
+    /**
+     * Sets a custom base URL for the API requests.
+     * @param baseUrl - The new base URL to use.
+     */
+    setBaseUrl(baseUrl: string): void {
+        this.baseUrl = baseUrl;
+    }
 
     // ===== Auth Configuration =====
     /**
      * Enables or disables Basic Authentication.
      * If enabled, standard signature-based headers will not be sent.
-     * 
+     *
      * @param enable - Whether to use Basic Auth.
-     * @throws {Error} If Basic Auth credentials were not provided in the constructor.
      */
     useBasicAuth(enable: boolean = true): void {
-        if (enable && !this.basicAuth) {
-            throw new Error('Basic Auth credentials must be provided in the constructor to enable it.');
-        }
         this.isBasicAuthEnabled = enable;
     }
 
-  // ===== Signature Generation =====
-  /**
-   * Generates a secure HMAC-SHA256 signature for request authentication.
-   * 
-   * @private
-   */
-  private generateApiSignature(
-    clientId: string,
-    requestId: string,
-    requestTime: string,
-    clientSecret: string
-  ): string {
-    const stringToSign = clientId + requestId + requestTime;
+    // ===== Signature Generation =====
+    /**
+     * Generates a secure HMAC-SHA256 signature for request authentication.
+     *
+     * @private
+     */
+    private generateApiSignature(
+        clientId: string,
+        requestId: string,
+        requestTime: string,
+        clientSecret: string
+    ): string {
+        const stringToSign = clientId + requestId + requestTime;
 
-    const signature = crypto
+        const signature = crypto
             .createHmac('sha256', clientSecret)
-      .update(stringToSign)
+            .update(stringToSign)
             .digest('base64');
 
-    return signature;
-  }
+        return signature;
+    }
 
   // ===== Core API Caller =====
   /**
@@ -154,8 +141,8 @@ export class Client {
             headers,
         };
 
-        if (this.isBasicAuthEnabled && this.basicAuth) {
-            requestConfig.auth = this.basicAuth;
+        if (this.isBasicAuthEnabled) {
+            requestConfig.auth = { username: this.clientId, password: this.clientSecret };
         }
 
         const response = await this.http.request<T>(requestConfig);
@@ -195,13 +182,4 @@ export class Client {
         return this.callApi('POST', Client.API_GET_UNITS, {});
   }
 
-  /**
-   * Updates a unit in the Voom CRM Integration.
-   * 
-   * @param unitId - The ID of the unit to update.
-   * @returns {Promise<Unit>} The API response containing the updated unit data.
-   */
-//   updateUnit(unitId: string): Promise<Unit> {
-//         return this.callApi('PUT', Client.API_UPDATE_UNIT(unitId));
-//   }
 }

@@ -19,7 +19,7 @@ async function run() {
         console.log("\n--- Testing bulkPush() ---");
         const testUnits = [
             {
-                unit_id: `test-unit-${Date.now()}`,
+                unit_id: `test-unit-1`,
                 tenant_id: "tenant_123",
                 project_id: "project_456",
                 name: "Test Apartment",

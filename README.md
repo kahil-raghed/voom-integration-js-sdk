@@ -9,7 +9,7 @@ A powerful, easy-to-use JavaScript/TypeScript SDK for integrating with the Voom 
 
 ## 🚀 Key Features
 
-- **Robust Authentication**: Supports both Signature-based (HMAC-SHA256) and Basic Authentication.
+- **Robust Authentication**: Uses secure Signature-based (HMAC-SHA256) headers.
 - **Bulk Operations**: Efficiently sync large unit datasets with `bulkPush`.
 - **Easy Initialization**: Effortless client configuration with custom base URL support.
 - **TypeScript First**: Full type safety for units and client responses.
@@ -54,31 +54,11 @@ const client = new Client('YOUR_CLIENT_ID', 'YOUR_CLIENT_SECRET');
 
 ## 🔐 Authentication
 
-The SDK supports two authentication mechanisms. By default, it uses a **Signature-based (HMAC-SHA256)** approach, which is more secure for server-to-server communication.
-
-### Standard Signature Auth (Default)
-
-The client automatically handles request signing using `X-Request-Signature`, `X-Request-Id`, and `X-Request-Time` headers.
+By default, the SDK uses a **Signature-based (HMAC-SHA256)** approach, which is secure for server-to-server communication. The client automatically handles request signing using `X-Request-Signature`, `X-Request-Id`, and `X-Request-Time` headers.
 
 ```typescript
 const client = new Client('CLIENT_ID', 'CLIENT_SECRET');
 await client.hello(); // Automatically uses signature-based auth
-```
-
-### Basic Authentication
-
-If your integration specifically requires Basic Authentication, you can initialize the client with credentials and enable it explicitly.
-
-```typescript
-const client = new Client('CLIENT_ID', 'CLIENT_SECRET', {
-    username: 'YOUR_USERNAME',
-    password: 'YOUR_PASSWORD'
-});
-
-// Enable Basic Auth (This disables signature headers)
-client.useBasicAuth(true);
-
-await client.hello(); // Uses Authorization: Basic header
 ```
 
 ---
@@ -133,10 +113,9 @@ console.log('Fetched Units:', units);
 
 ## 🧩 API Reference
 
-### `new Client(clientId, clientSecret, basicAuth?)`
+### `new Client(clientId, clientSecret)`
 - `clientId`: (Required) Your integration client ID.
 - `clientSecret`: (Required) Your integration client secret.
-- `basicAuth`: (Optional) Object containing `username` and `password`.
 
 ### `client.hello()`
 - Returns: `Promise<any>`
@@ -150,9 +129,6 @@ console.log('Fetched Units:', units);
 ### `client.getUnits()`
 - Returns: `Promise<any>`
 - Fetches units from the integration API.
-
-### `client.useBasicAuth(enable)`
-- `enable`: (Boolean) Default `true`. Switches the auth mode.
 
 ### `client.setBaseUrl(url)`
 - `url`: (String) Update the API target endpoint.

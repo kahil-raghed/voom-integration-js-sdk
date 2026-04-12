@@ -7,10 +7,8 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('Client', () => {
     let client: Client;
-    let basicAuth: { username: string; password: string };
     beforeEach(() => {
-        basicAuth = { username: 'test-user', password: 'test-password' };
-        client = new Client('test-id', 'test-secret', basicAuth);
+        client = new Client('test-id', 'test-secret');
         mockedAxios.request = jest.fn();
         client['http'] = mockedAxios as any;
     });
@@ -77,8 +75,8 @@ describe('Client', () => {
         expect(mockedAxios.request).toHaveBeenCalledWith(
             expect.objectContaining({
                 auth: expect.objectContaining({
-                    username: 'test-user',
-                    password: 'test-password',
+                    username: 'test-id',
+                    password: 'test-secret',
                 }),
                 headers: {},
             })
