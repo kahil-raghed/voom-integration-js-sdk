@@ -1,4 +1,4 @@
-import { UnitFactory } from "../units";
+import { UnitFactory } from "../src/units";
 
 describe("UnitFactory", () => {
   it("should create a unit correctly with all provided properties", () => {

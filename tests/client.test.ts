@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { Client } from '../client';
-import { Unit, UnitFactory } from '../units';
+import { Client } from '../src/client';
+import { Unit, UnitFactory } from '../src/units';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
