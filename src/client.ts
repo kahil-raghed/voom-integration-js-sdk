@@ -1,64 +1,122 @@
-import axios, { AxiosInstance } from "axios";
-import crypto from "crypto";
+import axios, { AxiosInstance } from 'axios';
+import * as crypto from 'crypto';
+import { Unit } from './units';
+
+/**
+ * Voom CRM Integration Client.
+ * Handles authentication and communication with the Voom CRM integration API.
+ */
+
+interface ApiRequestConfig {
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    url: string;
+    data?: any;
+    headers: Record<string, string>;
+    auth?: { username: string; password: string };
+}
 
 export class Client {
-  // ===== Constants =====
-  static readonly DEFAULT_BASE_URL = "https://crm-integration.voomproject.com";
+    // ===== Constants =====
+    /** Default base URL for the Voom CRM Integration API */
+    static readonly DEFAULT_BASE_URL = 'https://crm-integration.voomproject.com';
 
-  static readonly API_HELLO = "/api/client-api/v1/hello";
-  static readonly API_BULK_PUSH = "/api/client-api/v1/inventory/bulk-push";
-  static readonly API_GET_UNITS = "/api/client-api/v1/inventory/get-units";
+    /** Endpoint for connectivity testing */
+    static readonly API_HELLO = '/api/client-api/v1/hello';
+    /** Endpoint for bulk inventory synchronization */
+    static readonly API_BULK_PUSH = '/api/client-api/v1/inventory/bulk-push';
+    /** Endpoint for retrieving stored units */
+    static readonly API_GET_UNITS = '/api/client-api/v1/inventory/get-units';
 
-  // ===== Properties =====
-  private baseUrl: string = Client.DEFAULT_BASE_URL;
-  private clientId: string;
-  private clientSecret: string;
-  private http: AxiosInstance;
+    // ===== Properties =====
+    private baseUrl: string = Client.DEFAULT_BASE_URL;
+    private clientId: string;
+    private clientSecret: string;
+    private http: AxiosInstance;
+    private isBasicAuthEnabled: boolean = false;
 
-  // ===== Constructor =====
-  constructor(clientId: string, clientSecret: string) {
-    this.clientId = clientId;
-    this.clientSecret = clientSecret;
+    // ===== Constructor =====
+    /**
+     * Creates a new instance of the Voom Integration Client.
+     *
+     * @param clientId - The integration client ID.
+     * @param clientSecret - The integration client secret.
+     * @param basicAuth - Optional credentials for Basic Authentication.
+     */
+    constructor(clientId: string, clientSecret: string) {
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
 
-    this.http = axios.create({
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-  }
+        this.http = axios.create({
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+    }
 
-  // ===== Base URL =====
-  getBaseUrl(): string {
-    return this.baseUrl;
-  }
+    // ===== Base URL =====
+    /**
+     * Retrieves the current base URL used for API requests.
+     * @returns {string} The current base URL.
+     */
+    getBaseUrl(): string {
+        return this.baseUrl;
+    }
 
-  setBaseUrl(baseUrl: string): void {
-    this.baseUrl = baseUrl;
-  }
+    /**
+     * Sets a custom base URL for the API requests.
+     * @param baseUrl - The new base URL to use.
+     */
+    setBaseUrl(baseUrl: string): void {
+        this.baseUrl = baseUrl;
+    }
 
-  // ===== Signature Generation =====
-  private generateApiSignature(
-    clientId: string,
-    requestId: string,
-    requestTime: string,
-    clientSecret: string
-  ): string {
-    const stringToSign = clientId + requestId + requestTime;
+    // ===== Auth Configuration =====
+    /**
+     * Enables or disables Basic Authentication.
+     * If enabled, standard signature-based headers will not be sent.
+     *
+     * @param enable - Whether to use Basic Auth.
+     */
+    useBasicAuth(enable: boolean = true): void {
+        this.isBasicAuthEnabled = enable;
+    }
 
-    const signature = crypto
-      .createHmac("sha256", clientSecret)
-      .update(stringToSign)
-      .digest("base64");
+    // ===== Signature Generation =====
+    /**
+     * Generates a secure HMAC-SHA256 signature for request authentication.
+     *
+     * @private
+     */
+    private generateApiSignature(
+        clientId: string,
+        requestId: string,
+        requestTime: string,
+        clientSecret: string
+    ): string {
+        const stringToSign = clientId + requestId + requestTime;
 
-    return signature;
-  }
+        const signature = crypto
+            .createHmac('sha256', clientSecret)
+            .update(stringToSign)
+            .digest('base64');
+
+        return signature;
+    }
 
   // ===== Core API Caller =====
+  /**
+   * Internal method to perform HTTP requests with automatic authentication.
+   * 
+   * @private
+   */
   private async callApi<T = any>(
-    method: "GET" | "POST" | "PUT" | "DELETE",
+        method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     path: string,
     data?: any
   ): Promise<T> {
+        const headers: Record<string, string> = {};
+
+        if (!this.isBasicAuthEnabled) {
     const requestId = crypto.randomUUID();
     const requestTime = new Date().toISOString();
 
@@ -69,17 +127,25 @@ export class Client {
       this.clientSecret
     );
 
-    const response = await this.http.request<T>({
+            headers['X-Client-Id'] = this.clientId;
+            headers['X-Request-Id'] = requestId;
+            headers['X-Request-Time'] = requestTime;
+            headers['X-Request-Signature'] = signature;
+        }
+
+
+    const requestConfig: ApiRequestConfig = {
       method,
       url: this.baseUrl + path,
       data,
-      headers: {
-        "X-Client-Id": this.clientId,
-        "X-Request-Id": requestId,
-        "X-Request-Time": requestTime,
-        "X-Request-Signature": signature,
-      },
-    });
+            headers,
+        };
+
+        if (this.isBasicAuthEnabled) {
+            requestConfig.auth = { username: this.clientId, password: this.clientSecret };
+        }
+
+        const response = await this.http.request<T>(requestConfig);
 
     return response.data;
   }
@@ -87,25 +153,33 @@ export class Client {
   // ===== Public API Methods =====
 
   /**
-   * Push units in bulk
+   * Pushes units to the Voom CRM in bulk.
+   * 
+   * @param units - An array of unit data to synchronize.
+   * @returns {Promise<Unit[]>} The API response.
    */
-  bulkPush(units: any[]): Promise<any> {
-    return this.callApi("POST", Client.API_BULK_PUSH, {
+  bulkPush(units: Unit[]): Promise<Unit[]> {
+        return this.callApi('POST', Client.API_BULK_PUSH, {
       units,
     });
   }
 
   /**
-   * Test API connection
+   * Tests the connection to the Voom CRM Integration API.
+   * 
+   * @returns {Promise<any>} The API response from the hello endpoint.
    */
   hello(): Promise<any> {
-    return this.callApi("POST", Client.API_HELLO);
+        return this.callApi('POST', Client.API_HELLO);
   }
 
   /**
-   * Get units
+   * Retrieves a list of units from the Voom CRM Integration.
+   * 
+   * @returns {Promise<any>} The API response containing unit data.
    */
   getUnits(): Promise<any> {
-    return this.callApi("POST", Client.API_GET_UNITS);
+        return this.callApi('POST', Client.API_GET_UNITS, {});
   }
+
 }
